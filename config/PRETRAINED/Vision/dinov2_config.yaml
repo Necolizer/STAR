@@ -1,0 +1,4 @@
+repo: ./dinov2
+model_name: dinov2_vitb14
+weight_path: ./pretrain_models/dinov2_vitb14_pretrain.pth
+source: local

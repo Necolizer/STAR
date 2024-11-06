@@ -1,0 +1,93 @@
+seed: 1
+work_dir: ./log/ntu26xsub/videomaev2
+run_mode: train
+
+# feeder
+feeder: feeders.feeder_ntu.Feeder
+train_feeder_args:
+  data_path: ./dataset/NTU120_CSub.npz
+  video_path: ./dataset/ntu26_person_rgb
+  sample_path: ./txt/NTU26/ntu26_xsub_train.txt
+  split: train
+  debug: False
+  random_choose: False
+  random_shift: False
+  random_move: False
+  window_size: 120
+  normalization: False
+  random_rot: True
+  p_interval: [0.5, 1]
+  vel: False
+  bone: False
+  entity_rearrangement: True
+  img_size: 224
+  aug_method: a123489
+  intra_p: 0.5
+  inter_p: 0.2
+  uniform: True
+  rgb_frame_num: 16
+
+test_feeder_args:
+  data_path: ./dataset/NTU120_CSub.npz
+  video_path: ./dataset/ntu26_person_rgb
+  sample_path: ./txt/NTU26/ntu26_xsub_test.txt
+  split: test  
+  debug: False
+  window_size: 120
+  p_interval: [0.95]
+  vel: False
+  bone: False
+  img_size: 224
+  uniform: True
+  rgb_frame_num: 16
+
+# model
+model: model.ISTANet.ModelAlign
+model_args:
+  window_size: [20, 1, 2]
+  num_frames: 120
+  num_joints: 25
+  num_persons: 2
+  num_channels: 3
+  num_classes: 26
+  num_heads: 3
+  kernel_size: [3, 5]
+  use_pes: True
+  config: [[64,  64,  16], [64,  64,  16], 
+           [64,  128, 32], [128, 128, 32],
+           [128, 256, 64], [256, 256, 64], 
+           [256, 256, 64], [256, 256, 64]]
+  align_layer: 5
+  align_num_channels: 256
+
+# Pretrained Vision Model
+pretrained_vision_model: model.Vision.VideoMAEv2.videomaev2.videomaev2
+pretrained_vision_model_config: ./config/PRETRAINED/Vision/videomaev2_config.yaml
+enable_dotmap: False
+model_type: video
+align_channel: [768, 256]
+balance: [0.7, 0.4]
+refinement: 0.8
+
+#optim
+optimizer: SGD
+weight_decay: 0.0004
+base_lr: 0.1
+lr_decay_rate: 0.1
+step: [80, 110, 130, 140]
+warm_up_epoch: 5
+nesterov: True
+
+# loss
+loss: LabelSmoothingCrossEntropy
+loss_args:
+  smoothing: 0.05
+  temperature: 1.0
+
+# training
+device: [0,1,2,3]
+cuda_visible_device: '4,5,6,7'
+batch_size: 64
+test_batch_size: 64
+num_epoch: 160
+eval_interval: 3
